@@ -1,5 +1,7 @@
 # Portfolio Quant Analysis — Argentine investor, measured in USD
 
+### 📊 [Ver informe interactivo / View interactive report](https://matiasalacahan.github.io/portfolio-quant-analysis/reports/portfolio_report.html)
+
 **[English](#english) · [Español](#español)**
 
 Quantitative analysis of two real investment portfolios held by an Argentine retail investor
@@ -24,7 +26,7 @@ checks and a forward-looking view from today's prices.
 | 5. Robustness | `src/robustness.py` | Same analysis from Oct-2024 + country-risk context |
 | 6. Stress scenarios | `src/scenarios.py` | Auto-detected worst drawdowns, loss per portfolio |
 | 7. Outlook | `src/outlook.py` | Expected returns from today's yields/valuations + Monte Carlo of the plan |
-| Report | `src/report.py` | `reports/portfolio_report.html` (interactive, Spanish) |
+| 8. Report | `src/report.py` | `reports/portfolio_report.html` (interactive, in Spanish) |
 
 ### Portfolios
 
@@ -49,7 +51,11 @@ CEDEARs are analyzed through their US-listed underlying, in USD.
 | Full rebalance | USD 26,432 | 31.2% | USD 229 |
 | 100% SPY | USD 18,785 | 17.2% | USD 79 |
 
-**But:**
+- **With USD 200 a month** (USD 12,200 invested) the strategy would have ended at **USD 26,353**, versus USD 18,785
+  all in SPY. Money-weighted return: 31.1% a year versus 17.2%.
+- **Buying the underweights without selling** performs almost the same as a full rebalance (USD 26,432) and pays
+  a third of the fees.
+- **More Argentine risk:** in 2022 the combined portfolio fell 28%, more than SPY. The correlation between A and B is 0.67.
 - **Robustness:** starting Oct-2024 the strategy and SPY end up roughly even (17.5% vs 16.5% money-weighted).
 - **Hindsight bias:** assets were chosen in 2026 knowing the winners (NVDA, VIST), and the window starts
   with Argentine country risk at 1,667 bps (peak 2,913) versus ~700 today. That compression cannot repeat.
@@ -88,13 +94,28 @@ CEDEARs are analyzed through their US-listed underlying, in USD.
 
 ### How to run
 
+Windows:
+
 ```bash
 python -m venv .venv
-.venv\Scripts\activate        # Windows  (source .venv/bin/activate on macOS/Linux)
+.venv\Scripts\activate
 pip install -r requirements.txt
-python main.py                # uses cached data in data/raw
-python main.py --refresh      # re-downloads everything (prices, live bond quotes, valuations)
-pytest                        # unit tests
+```
+
+macOS / Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Then, on any system:
+
+```bash
+python main.py              # downloads the data on the first run, then uses the cache in data/raw
+python main.py --refresh    # re-downloads everything (prices, live bond quotes, valuations)
+pytest                      # unit tests
 ```
 
 The report is written to `reports/portfolio_report.html`. Weights, commissions, proxies and the
@@ -138,6 +159,17 @@ arma las series de datos con fuentes del mercado local, reconstruye el retorno t
 comisiones. También mide las peores caídas, prueba la robustez de los resultados y estima qué cabe
 esperar desde los precios de hoy.
 
+| Paso | Módulo | Resultado |
+|---|---|---|
+| 1. Datos | `src/data_loader.py`, `src/proxies.py` | Series diarias de retorno total en USD de 16 activos (5 años) |
+| 2. Retorno total de bonos | `src/cashflows.py` | Flujos de cupón y amortización, validados contra la caída del precio en la fecha ex |
+| 3. Métricas | `src/metrics.py` | Rendimiento anual, volatilidad, Sharpe, Sortino, máxima caída, correlaciones |
+| 4. Backtest | `src/backtest.py` | USD 200 por mes, 60/40, comprar lo que está bajo su peso vs rebalanceo completo vs 100% SPY |
+| 5. Robustez | `src/robustness.py` | El mismo análisis desde oct-2024 + contexto de riesgo país |
+| 6. Escenarios de estrés | `src/scenarios.py` | Detección automática de las peores caídas y pérdida de cada portafolio |
+| 7. Expectativas | `src/outlook.py` | Rendimientos esperados desde las TIR y valuaciones de hoy + Monte Carlo del plan |
+| 8. Informe | `src/report.py` | `reports/portfolio_report.html` (interactivo, en español) |
+
 ### Portafolios
 
 **A — Renta en dólares (60% de cada aporte):** AL35 15%, AO27 15%, ON YPF 2031 10%, ON Vista 2031 10%,
@@ -147,6 +179,19 @@ ON Tecpetrol 2030 10%, SPY 20%, IEUR 10%, FCI IOL Dólar Ahorro Plus 10%.
 Los CEDEARs se analizan por su activo subyacente en EE.UU., en dólares.
 
 ### Resultados principales (oct-2021 → oct-2026)
+
+| | Rend. anual | Volatilidad | Sharpe | Máx. caída |
+|---|---|---|---|---|
+| A (renta) | 14,7% | 16,7% | 0,68 | -36,7% |
+| B (crecimiento) | 38,9% | 26,2% | 1,24 | -31,7% |
+| Combinado 60/40 | 24,3% | 18,3% | 1,07 | -32,7% |
+| SPY | 12,3% | 17,2% | 0,54 | -24,5% |
+
+| Backtest, USD 200 por mes (USD 12.200 aportados) | Valor final | Rend. de tu dinero (XIRR) | Comisiones |
+|---|---|---|---|
+| Estrategia (comprar lo que está bajo su peso, sin vender) | USD 26.353 | 31,1% | USD 72 |
+| Rebalanceo completo | USD 26.432 | 31,2% | USD 229 |
+| 100% SPY | USD 18.785 | 17,2% | USD 79 |
 
 - **Con USD 200 por mes** (USD 12.200 aportados), la estrategia terminaría en **USD 26.353**, contra USD 18.785 con todo en SPY.
   El rendimiento anual de tu dinero fue de 31,1%, contra 17,2%.
@@ -168,6 +213,8 @@ Los CEDEARs se analizan por su activo subyacente en EE.UU., en dólares.
 - **Proxies:** AO27 → AL30D con retorno total. ONs → 50% CEMB + 50% AL30D (base), solo CEMB (pesimista) y EMB (sensibilidad).
   TXMD9 → bono sintético que cada mes rinde el máximo entre CER y TAMAR, pasado a USD con el CCL. FCI → cuotaparte real
   desde nov-2024 y BIL antes.
+- **Métricas:** retornos diarios para la volatilidad y el Sharpe (tasa libre de riesgo: letra del Tesoro de EE.UU. a 13
+  semanas, ^IRX) y retornos **semanales** para las correlaciones, porque los feriados argentinos y los de EE.UU. no coinciden.
 - **Backtest:** aporte el primer día hábil de cada mes. Comisión de 0,65% por operación (0,5% + IVA + derechos de mercado)
   y 0% en el FCI. El peso de NU se reparte entre el resto de B hasta su salida a bolsa (dic-2021).
 - **Expectativas:** para bonos, la TIR actual (cálculo propio, controlado contra Rava). Para ETFs, el rendimiento de las
@@ -185,14 +232,61 @@ Los CEDEARs se analizan por su activo subyacente en EE.UU., en dólares.
 
 ### Cómo correrlo
 
+Windows:
+
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-python main.py               # usa los datos guardados en data/raw
-python main.py --refresh     # vuelve a descargar todo
-pytest                       # tests
+```
+
+macOS / Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Después, en cualquier sistema:
+
+```bash
+python main.py              # la primera vez descarga los datos; después usa la caché de data/raw
+python main.py --refresh    # vuelve a descargar todo (precios, cotizaciones de bonos, valuaciones)
+pytest                      # tests
 ```
 
 El informe queda en `reports/portfolio_report.html`. Los pesos, las comisiones, los proxies y el período
 se cambian en `src/config.py`.
+
+### Estructura del proyecto
+
+```
+├── main.py                 punto de entrada del pipeline
+├── src/
+│   ├── config.py           pesos, fuentes, proxies, comisiones
+│   ├── data_loader.py      yfinance, data912, ArgentinaDatos, BCRA (con caché)
+│   ├── cashflows.py        flujos de bonos + índice de retorno total
+│   ├── proxies.py          empalmes, mezcla de ONs, bono dual sintético, FCI
+│   ├── metrics.py          armado de portafolios y métricas de riesgo
+│   ├── backtest.py         backtest de aportes mensuales con comisiones
+│   ├── robustness.py       análisis por subperíodo, contexto de riesgo país
+│   ├── scenarios.py        detección de caídas y tabla de estrés
+│   ├── outlook.py          TIR, rendimientos esperados, Monte Carlo
+│   ├── figures.py          gráficos estáticos PNG
+│   ├── report.py           informe HTML (Plotly + Jinja2)
+│   └── templates/
+├── notebooks/analysis.ipynb
+├── data/raw, data/processed   (ver data/README.md)
+├── reports/                portfolio_report.html, figures/, tables/
+└── tests/
+```
+
+**Fuentes de datos:** yfinance · [data912.com](https://data912.com) · [ArgentinaDatos](https://argentinadatos.com) (CAFCI, CCL, riesgo país)
+· [API del BCRA](https://www.bcra.gob.ar/BCRAyVos/catalogo-de-APIs-banco-central.asp) · Rava Bursátil (flujos de fondos de bonos).
+
+---
+
+## License / Licencia
+
+[MIT](LICENSE)
