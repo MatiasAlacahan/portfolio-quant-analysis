@@ -1,0 +1,17 @@
+,expected_return,method,detail
+AL35,0.1265972454157732,Bond yield to maturity,"TIR at 68.98 (AL35D), duration 4.6"
+AO27,0.026186885431297154,Bond yield to maturity,"TIR at 103.85 (AO27D), duration 0.9"
+YMCXO,0.06418067195519994,Bond yield to maturity,"TIR at 110.03 (YMCXD), duration 3.4"
+VSCRO,0.06153330425894626,Bond yield to maturity,"TIR at 105.85 (VSCRD), duration 3.3"
+TTCDO,0.05974595512943659,Bond yield to maturity,"TIR at 109.78 (TTCDD), duration 3.2"
+FCI_IOL_DAP,0.042943651441296415,Recent fund yield,"Last 26 weeks, annualized"
+SPY,0.06617915692264867,Earnings yield + inflation,P/E 24.3 → 4.1% real + 2.5%
+QQQ,0.06166934536234539,Earnings yield + inflation,P/E 27.3 → 3.7% real + 2.5%
+IEUR,0.08191691325919337,Earnings yield + inflation,P/E 17.6 → 5.7% real + 2.5%
+GOOGL,0.07187080917377366,CAPM,beta 1.22 vs SPY (5y weekly)
+NVDA,0.0935756291601142,CAPM,beta 2.06 vs SPY (5y weekly)
+TSM,0.0726342052853511,CAPM,beta 1.25 vs SPY (5y weekly)
+NU,0.07479411849484086,CAPM,beta 1.33 vs SPY (5y weekly)
+VIST,0.056003362379398736,CAPM,beta 0.61 vs SPY (5y weekly)
+BMA,0.06414280644168736,CAPM,beta 0.92 vs SPY (5y weekly)
+TXMD9,0.0,"Real peso yield, flat real FX",TAMAR 27.4% eff. vs inflation 33.5%

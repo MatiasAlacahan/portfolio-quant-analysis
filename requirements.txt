@@ -1,0 +1,13 @@
+yfinance>=0.2.40
+curl_cffi>=0.15
+pandas>=2.1
+numpy>=1.26
+requests>=2.31
+scipy>=1.11
+plotly>=5.20
+jinja2>=3.1
+matplotlib>=3.8
+pytest>=8.0
+nbformat>=5.9
+nbconvert>=7.16
+ipykernel>=6.29

@@ -1,0 +1,32 @@
+# Python environment and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Downloaded data cache (re-created by `python main.py` / `--refresh`)
+data/raw/
+
+# Local tooling and editor settings
+.claude/
+.vscode/
+.idea/
+
+# Secrets (never commit)
+.env
+.env.*
+*.key
+*.pem
+
+# Temporary, log and OS files
+*.log
+*.tmp
+*.bak
+~$*
+Thumbs.db
+Desktop.ini
+.DS_Store

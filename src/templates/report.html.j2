@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Análisis de portafolios</title>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-locales@2.35.2/es.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10); --accent: #2a78d6;
+  --callout: #eef4fc; --warn: #fdf4e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --accent: #3987e5;
+    --callout: #16212f; --warn: #2a2214;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --accent: #3987e5;
+  --callout: #16212f; --warn: #2a2214;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+header { margin-bottom: 28px; }
+h1 { font-size: 30px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 21px; margin: 44px 0 6px; padding-top: 8px; }
+h3 { font-size: 16px; margin: 24px 0 6px; }
+p { margin: 8px 0; color: var(--ink); max-width: 72ch; }
+.sub, .note { color: var(--ink-2); }
+.note { font-size: 13px; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; margin-top: 14px; }
+nav a { color: var(--accent); text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; margin: 14px 0; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.kpi .label { font-size: 12.5px; color: var(--ink-2); }
+.kpi .value { font-size: 26px; font-weight: 650; margin: 2px 0; }
+.kpi .ctx { font-size: 12.5px; color: var(--muted); }
+ol.concl { padding-left: 22px; margin: 8px 0; }
+ol.concl li { margin: 10px 0; max-width: 80ch; }
+.callout { background: var(--callout); border-radius: 10px; padding: 14px 16px; margin: 14px 0; }
+.warn { background: var(--warn); border-radius: 10px; padding: 14px 16px; margin: 14px 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } h1 { font-size: 24px; } }
+.scroll { overflow-x: auto; }
+table.tbl { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.tbl th { color: var(--ink-2); font-weight: 600; }
+.tbl tbody th, .tbl td:first-child { text-align: left; }
+.tbl thead th { border-bottom: 1px solid var(--axis); vertical-align: bottom; white-space: normal; }
+.tbl-wide td { white-space: normal; text-align: left; }
+.tbl-wide td:last-child { min-width: 320px; }
+.chart { width: 100%; }
+ul.lim li { margin: 8px 0; max-width: 80ch; }
+footer { margin-top: 48px; font-size: 12.5px; color: var(--muted); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>{{ title }}</h1>
+  <p class="sub">Inversor argentino en InvertirOnline · todo medido en dólares · período {{ start }} – {{ end }} · generado el {{ generated }}</p>
+  <nav>
+    <a href="#resumen">Resumen</a><a href="#portafolios">Portafolios</a><a href="#historico">Rendimiento</a>
+    <a href="#caidas">Caídas</a><a href="#correlacion">Correlación</a><a href="#backtest">Backtest</a>
+    <a href="#robustez">Robustez</a><a href="#sesgo">Sesgo de retrospectiva</a><a href="#hoy">Implicancias para hoy</a>
+    <a href="#metodo">Metodología</a>
+  </nav>
+</header>
+
+<section id="resumen">
+  <div class="kpis">
+    {% for label, value, ctx in kpis %}
+    <div class="kpi"><div class="label">{{ label }}</div><div class="value">{{ value }}</div><div class="ctx">{{ ctx }}</div></div>
+    {% endfor %}
+  </div>
+  <h2 style="margin-top:20px">Conclusiones en lenguaje simple</h2>
+  <ol class="concl">
+    {% for c in conclusions %}<li>{{ c }}</li>{% endfor %}
+  </ol>
+  <p class="note">Este informe es un análisis de datos históricos con fines educativos y de portfolio profesional. No es una recomendación de inversión.</p>
+</section>
+
+<section id="portafolios">
+  <h2>Los dos portafolios</h2>
+  <p>Cada aporte mensual se reparte 60% al portafolio A y 40% al B. Los CEDEARs se analizan por su activo subyacente en EE.UU.</p>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0"><span class="swatch" style="background:#2a78d6"></span>A · Renta en dólares (60%)</h3>
+      <table class="tbl"><tbody>{% for n, w in w_a %}<tr><td>{{ n }}</td><td>{{ w }}</td></tr>{% endfor %}</tbody></table></div>
+    <div class="card"><h3 style="margin-top:0"><span class="swatch" style="background:#eb6834"></span>B · Crecimiento (40%)</h3>
+      <table class="tbl"><tbody>{% for n, w in w_b %}<tr><td>{{ n }}</td><td>{{ w }}</td></tr>{% endfor %}</tbody></table></div>
+  </div>
+</section>
+
+<section id="historico">
+  <h2>Rendimiento histórico</h2>
+  <p>Cuánto valdrían USD 100 invertidos al inicio en cada portafolio, con rebalanceo mensual y sin comisiones. Incluye dividendos y cupones reinvertidos.</p>
+  <div class="card"><div class="chart" id="fig-growth"></div></div>
+  <div class="card scroll">{{ tables.metrics }}</div>
+  <p class="note"><b>Sharpe</b>: retorno por encima de la letra del Tesoro de EE.UU. por cada unidad de volatilidad (más alto es mejor). <b>Sortino</b>: igual, pero penaliza solo las bajas. <b>Máx. caída</b>: la peor baja desde un máximo.</p>
+</section>
+
+<section id="caidas">
+  <h2>Las peores caídas del período</h2>
+  <p>Los episodios se detectan automáticamente: las caídas más profundas de SPY, del combinado, de A y de B. Para cada uno se mide cuánto perdió cada portafolio entre el máximo previo y el piso.</p>
+  <div class="card"><div class="chart" id="fig-stress"></div></div>
+  <div class="card scroll">{{ tables.stress }}</div>
+  <div class="callout">
+    <b>Qué muestran:</b> A protege en los shocks de EE.UU. (aranceles de 2025, corrección de 2026), pero sufre más que SPY en los episodios argentinos (2022, elecciones de 2023 y 2025). B hace lo contrario. En 2022 los dos cayeron juntos: es el escenario que más le duele a esta combinación.
+  </div>
+  <div class="card"><div class="chart" id="fig-drawdown"></div></div>
+</section>
+
+<section id="correlacion">
+  <h2>Correlación</h2>
+  <p>Correlación de retornos semanales (1 = se mueven igual, 0 = independientes). Se usan semanas porque los feriados de Argentina y EE.UU. no coinciden, y los retornos diarios subestimarían la relación.</p>
+  <div class="card"><div class="chart" id="fig-corr"></div></div>
+  <p class="note">Las tres ONs comparten el mismo proxy y AO27 usa AL30, que forma parte de ese proxy. Por eso su correlación entre sí (~1) es un artefacto del método, no un dato de mercado.</p>
+  <h3>Correlación A/B en ventanas de 26 semanas</h3>
+  <p>En promedio {{ n.corr_ab }}. Lo que une a los dos portafolios es el riesgo argentino (AL35, BMA, VIST); lo que más diversifica es TXMD9 frente a la tecnología de EE.UU.</p>
+  <div class="card"><div class="chart" id="fig-rolling"></div></div>
+</section>
+
+<section id="backtest">
+  <h2>Backtest: {{ n.contribution }} por mes</h2>
+  <p>Aporte el primer día hábil de cada mes. Comisión de {{ n.fee }} por operación en bonos, ONs, CEDEARs y acciones (0,5% + IVA + derechos de mercado), y 0% en el FCI.
+     <b>Tu estrategia</b> usa cada aporte para comprar lo que quedó por debajo de su peso objetivo, sin vender nunca. El <b>rebalanceo completo</b> además vende lo que sobra.</p>
+  <div class="card"><div class="chart" id="fig-backtest"></div></div>
+  <div class="card scroll">{{ tables.backtest }}</div>
+  <p class="note"><b>XIRR</b>: rendimiento anual de tu dinero, teniendo en cuenta cuándo entró cada aporte. <b>TWR</b>: rendimiento de la estrategia, independiente de los aportes.</p>
+  <h3>Sensibilidad al proxy de las ONs</h3>
+  <p>Las ONs no tienen historia pública, así que se prueban tres proxies. El escenario base es 50% CEMB + 50% AL30D: las ONs AAA argentinas en dólares cotizan entre el corporativo emergente y el soberano argentino.</p>
+  <div class="card scroll">{{ tables.on }}</div>
+</section>
+
+<section id="robustez">
+  <h2>Robustez: desde {{ n.robust_start }}</h2>
+  <p>El mismo backtest, empezando después del rebote argentino de 2023.</p>
+  <div class="card"><div class="chart" id="fig-robust"></div></div>
+  <div class="card scroll">{{ tables.robust }}</div>
+  <div class="callout">
+    <b>Resultado:</b> en esta ventana tu dinero rindió {{ n.w_me_xirr }} anual contra {{ n.w_spy_xirr }} en SPY: <b>prácticamente empatan</b>.
+    Y la ventana todavía incluye una baja del riesgo país de {{ n.embi_robust }} a {{ n.embi_now }} pb. Sin esa ayuda, el resultado del portafolio A habría sido más bajo.
+  </div>
+</section>
+
+<section id="sesgo">
+  <h2>Sesgo de retrospectiva: por qué estos resultados son un techo</h2>
+  <div class="card"><div class="chart" id="fig-embi"></div></div>
+  <ul class="lim">
+    <li><b>Los activos se eligieron en 2026, conociendo a los ganadores.</b> NVDA rindió {{ n.nvda_cagr }} anual y VIST {{ n.vist_cagr }} en el período. Un inversor de 2021 no sabía que serían estos. Un backtest con la cartera de hoy siempre favorece a lo que ya subió.</li>
+    <li><b>El período arranca con el riesgo país en {{ n.embi_start }} pb</b> (llegó a {{ n.embi_peak }} en 2022) y termina en {{ n.embi_now }}. Esa compresión explica buena parte del rendimiento de AL35, AO27, las ONs y BMA. Desde ~700 pb queda poco margen para repetirla: el mínimo del período fue {{ n.embi_low }}.</li>
+    <li><b>TXMD9 rindió {{ n.txmd9_hist }} anual en dólares</b> (versión sintética), sobre todo por la apreciación real del peso (el "carry trade"). Es un fenómeno de un período, no un rendimiento estructural.</li>
+    <li><b>Conclusión:</b> los números históricos son un techo optimista, no lo que cabe esperar. Para eso está la sección siguiente.</li>
+  </ul>
+</section>
+
+<section id="hoy">
+  <h2>Implicancias para hoy</h2>
+  <p>En lugar de proyectar el pasado, cada activo se estima con una regla simple y transparente a partir de los precios actuales:</p>
+  <ul class="lim">
+    <li><b>Bonos y ONs</b>: TIR al precio de hoy, calculada con el flujo de fondos y controlada contra Rava. Es lo que se gana si el emisor paga todo: un máximo, no un promedio.</li>
+    <li><b>FCI</b>: su rendimiento de las últimas 26 semanas ({{ n.fci_y }}).</li>
+    <li><b>ETFs</b>: rendimiento de las ganancias (1/PER) más 2,5% de inflación en dólares. Para SPY da {{ n.spy_er }}.</li>
+    <li><b>Acciones</b>: CAPM: letra del Tesoro ({{ n.rf_now }}) + beta × prima de SPY. No se supone que ninguna acción le gane al mercado.</li>
+    <li><b>TXMD9</b>: rendimiento real en pesos con tipo de cambio real estable. Hoy la TAMAR ({{ n.tamar }}) está por debajo de la inflación de 12 meses ({{ n.infl }}), así que el piso CER da ~0% real.</li>
+  </ul>
+  <div class="card"><div class="chart" id="fig-expected"></div></div>
+  <div class="card scroll">{{ tables.bonds }}</div>
+  <div class="card scroll">{{ tables.expected }}</div>
+  <p class="note">La volatilidad esperada usa la covarianza de los últimos 2 años (el régimen actual de riesgo país). La de AO27 se escala desde AL35 por duración, porque su proxy (AL30) es mucho más largo.</p>
+  <h3>Qué podría pasar con el plan de {{ n.contribution }} por mes en los próximos 5 años</h3>
+  <p>Simulación Monte Carlo (10.000 escenarios) con los retornos y volatilidades esperados.</p>
+  <div class="card"><div class="chart" id="fig-simulation"></div></div>
+  <div class="card scroll">{{ tables.sim }}</div>
+  <div class="callout">
+    <b>Lectura:</b>
+    <ul class="lim" style="margin:6px 0 0">
+      <li>Desde los precios de hoy, el combinado tiene un rendimiento esperado de ~{{ n.ab_exp }} anual con {{ n.ab_vol }} de volatilidad, casi igual que SPY ({{ n.spy_exp }}). <b>La ventaja histórica no se puede trasladar al futuro.</b></li>
+      <li>En el portafolio A, <b>AL35 ({{ n.al35_ytm }}) es casi todo el motor de rendimiento</b> y compensa riesgo de default soberano. Las ONs rinden ~{{ n.on_ytm }}.</li>
+      <li><b>AO27 rinde {{ n.ao27_ytm }}</b>: menos que la letra del Tesoro de EE.UU. ({{ n.rf_now }}) y que el propio FCI ({{ n.fci_y }}), con más riesgo que ambos. Es un dato a tener en cuenta en la próxima revisión de pesos.</li>
+      <li>La mediana simulada para el combinado es {{ n.sim_p50 }} (rango 10-90%: {{ n.sim_p10 }} – {{ n.sim_p90 }}), lejos de los {{ n.hist_final }} del backtest. La probabilidad de terminar con menos de lo aportado es ~{{ n.sim_loss }}.</li>
+    </ul>
+  </div>
+  <p class="note">Estos son supuestos simples, no pronósticos. Sirven para calibrar expectativas, no para decidir operaciones.</p>
+</section>
+
+<section id="metodo">
+  <h2>Metodología, datos y limitaciones</h2>
+  <h3>Fuentes por activo</h3>
+  <div class="card scroll">{{ tables.coverage }}</div>
+  <h3>Retorno total de bonos</h3>
+  <p>data912 publica solo el precio, por cada 100 de valor nominal original, y el precio cae el día hábil anterior a cada pago. Se reconstruye el retorno total con
+     <code>TR<sub>t</sub> = TR<sub>t-1</sub> × (P<sub>t</sub> + flujo<sub>t</sub>) / P<sub>t-1</sub></code>, con los flujos de cupón y amortización de AL35 y AL30 en su fecha ex,
+     reinvertidos en el mismo bono. La validación muestra que la caída del precio en la fecha ex coincide con el flujo (por ejemplo, AL30D el 8-ene-2025: flujo 8,36, caída 8,35). Sin este ajuste, AL30D rendiría 9% anual en lugar de 24%.</p>
+  <h3>Limitaciones</h3>
+  <ul class="lim">
+    <li><b>Proxies.</b> AO27, las tres ONs y TXMD9 no tienen historia pública suficiente. AL30 es más largo y volátil que AO27 (vence en 2027), así que <b>el proxy sobreestima la volatilidad y las caídas de AO27</b>. La ON de Tecpetrol de la cartera (TTCDO) vence en 2030, no en 2034.</li>
+    <li><b>TXMD9 sintético</b>: captura el rendimiento del CER o la TAMAR y el riesgo cambiario, pero no la variación de precio de mercado, así que subestima su volatilidad. Antes de oct-2024 la TAMAR se aproxima como BADLAR + spread.</li>
+    <li><b>FCI</b>: dato real desde nov-2024 (muestreo semanal, con huecos interpolados); antes, letras del Tesoro de EE.UU. (BIL).</li>
+    <li><b>CEDEARs</b>: se usa el subyacente en USD. No se incluye la brecha del CCL ni el costo de conversión.</li>
+    <li><b>Sesgo de retrospectiva</b>: ver la sección dedicada. Los resultados históricos son un techo, no una expectativa.</li>
+    <li><b>Impuestos</b>: no se consideran (bienes personales, ganancias).</li>
+    <li>Rendimientos pasados no garantizan rendimientos futuros. Esto no es asesoramiento financiero.</li>
+  </ul>
+</section>
+
+<footer>
+  Fuentes: yfinance, data912.com, ArgentinaDatos (CAFCI, CCL, riesgo país), API del BCRA, Rava Bursátil (flujos de fondos). Código: Python (pandas, Plotly). Gráficos interactivos: pasá el mouse para ver los valores.
+</footer>
+</main>
+
+<script>
+const FIGS = {{ figs }};
+const DARK_SWAP = {"#2a78d6":"#3987e5","#eb6834":"#d95926","#1baf7a":"#199e70","#eda100":"#c98500",
+                   "#6250d6":"#9085e9","#e34948":"#e66767","#fcfcfb":"#1a1a19","#f0efec":"#383835"};
+function isDark() {
+  const t = document.documentElement.getAttribute("data-theme");
+  if (t) return t === "dark";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function swapColors(obj, dark) {
+  if (!dark) return obj;
+  const s = JSON.stringify(obj).replace(/#[0-9a-f]{6}/gi, m => DARK_SWAP[m.toLowerCase()] || m);
+  return JSON.parse(s);
+}
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function render() {
+  const dark = isDark();
+  for (const [key, fig] of Object.entries(FIGS)) {
+    const el = document.getElementById("fig-" + key);
+    if (!el) continue;
+    const f = swapColors(fig, dark);
+    const layout = Object.assign({}, f.layout, {
+      template: undefined, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+      font: Object.assign({}, f.layout.font, { color: css("--ink-2") }),
+      hoverlabel: { bgcolor: css("--surface"), bordercolor: css("--border"), font: { color: css("--ink") } },
+    });
+    for (const ax of ["xaxis", "yaxis"]) {
+      layout[ax] = Object.assign({}, f.layout[ax] || {}, {
+        gridcolor: css("--grid"), linecolor: css("--axis"), zerolinecolor: css("--axis"),
+        tickfont: { color: css("--muted") }, title: Object.assign({}, (f.layout[ax] || {}).title,
+        { font: { color: css("--ink-2"), size: 12 } }) });
+    }
+    if (layout.shapes) layout.shapes = layout.shapes.map(s => Object.assign({}, s, { line: Object.assign({}, s.line, { color: css("--muted") }) }));
+    if (layout.annotations) layout.annotations = layout.annotations.map(a => Object.assign({}, a, { font: { color: css("--ink-2"), size: 11 } }));
+    Plotly.react(el, f.data, layout, { displayModeBar: false, responsive: true, locale: "es" });
+  }
+}
+render();
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+</script>
+</body>
+</html>

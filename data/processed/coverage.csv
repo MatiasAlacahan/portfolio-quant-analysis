@@ -1,0 +1,17 @@
+asset,source_type,series,first_real_date,real_data_share,note
+AL35,real,AL35D_TR,2021-09-23,1.0,data912 AL35D (USD MEP) + coupons reinvested (total return).
+AO27,proxy,AL30D_TR,,0.0,"No public price history for AO27 (issued 2025). Proxy: AL30D total return (Argentine hard-dollar sovereign, same issuer). AL30 matures in 2030 and is longer and more volatile than AO27 (2027), so the proxy overstates AO27's volatility."
+YMCXO,proxy,ON_BLEND,,0.0,No public history for this ON. Base proxy: 50% CEMB + 50% AL30D total return (AAA Argentine USD corporates sit between EM corporates and the sovereign).
+VSCRO,proxy,ON_BLEND,,0.0,No public history for this ON. Base proxy: 50% CEMB + 50% AL30D total return.
+TTCDO,proxy,ON_BLEND,,0.0,No public history for this ON. Base proxy: 50% CEMB + 50% AL30D total return.
+FCI_IOL_DAP,real+proxy,FCI_DAP_SPLICED,2024-11-01,0.394,"Real NAV (ArgentinaDatos/CAFCI, Clase D) when available; BIL (US T-bills) before."
+TXMD9,synthetic,DUAL_SYNTH_USD,,0.0,"No history (issued 2025). Synthetic: monthly max(CER, TAMAR) accrual in ARS, converted to USD at CCL. TAMAR before Oct-2024 = BADLAR + avg spread."
+SPY,real,SPY,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+IEUR,real,IEUR,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+QQQ,real,QQQ,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+GOOGL,real,GOOGL,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+NVDA,real,NVDA,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+TSM,real,TSM,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+NU,real,NU,2021-12-09,0.975,"yfinance, dividend-adjusted close (US-listed underlying)."
+VIST,real,VIST,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
+BMA,real,BMA,2021-08-26,1.0,"yfinance, dividend-adjusted close (US-listed underlying)."
